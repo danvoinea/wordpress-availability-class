@@ -24,6 +24,7 @@ class Availability {
     // MUST FEED ARRAY WITH WEBSITE LIST
     function parse($websiteList) {
 
+	// HEADER
 
 	$this->output.='
 <!DOCTYPE html>
@@ -37,12 +38,21 @@ class Availability {
 
     <!-- styles -->
     <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap.min.css" rel="stylesheet">
-    <style> 
+    <style>
 	body {padding-top: 60px; }
 	.website { color: red; }
 	.status6 { color: green; }
 	.black { color: black; }
-	h2 { line-height:10px; padding-bottom:0px; margin-bottom:0px; }
+	/* Sortable tables */
+	table.sortable thead {
+	    background-color:#eee;
+	    color:#666666;
+	    font-weight: bold;
+	    cursor: default;
+	}
+
+	table td,table th { padding:1px 10px; text-align:center;}
+	table td.alignLeft { text-align:left; }
     </style>
     <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-responsive.min.css" rel="stylesheet">
 
@@ -56,13 +66,23 @@ class Availability {
 
     <div class="container">';
 
+
+//start table
+$this->output.='<table class="sortable">
+<thead><tr>
+<th>Domain</th><th>Check time</th><th>DNS domain</th><th>DNS www.domain</th><th>Website up</th><th>Has wordpress</th><th>WP-Admin accessible</th><th>WP-admin display login</th><th>Status</th>
+</tr></thead><tbody>';
 	foreach ($websiteList as $site){
 		$this->check(trim(strtolower($site)));
 	}
 
+//end table
+$this->output.='</tbody></table>';
+
+
+	//FOOTER
 	$this->output.='
     </div> <!-- /container -->
-
   </body>
 </html>';
 
@@ -73,52 +93,46 @@ class Availability {
 
 	$status=0;
 
-	$this->site_report = "<h2>".$site."</h2>";
-        $this->site_report .= "<br />\n";
+	$this->site_report = "<td class='alignLeft'><h4>".$site."</h4></td><td>".date("Y-m-d h:i:s")."</td>";
 
 	$status += $this->checkDNS($site);
 
         $status += $this->checkDNS("www.".$site);
-        $this->site_report .=  "<br />\n";
 
 	$webData = $this->isSiteAvailable($site,"website");
-        $this->site_report .=  "<br />\n";
 
 	if ($webData){
 		$status++;
 
 		$status += $this->findTheme($webData);
-	        $this->site_report .=  "<br />\n";
 
 	        $adminData = $this->isSiteAvailable($site."/wp-admin","admin");
-	        $this->site_report .=  "<br />\n";
 
 		if ($adminData){
 			$status++;
 
 			$status += $this->findLoginButton($adminData);
-		        $this->site_report .=  "<br />\n";
 		}
 
 	}
 
 
-	$this->output .= '<div class="website status'.$status.'">';
+	$this->output .= '<tr class="website status'.$status.'">';
 	$this->output .= $this->site_report;
-	$this->output .= '</div>';
-        $this->output .=  "<br />\n";
+	$this->output .= '<td>'.$status.'</td></tr>';
 
     }
 
     function checkDNS($site){
 	$ip=gethostbyname($site);
 	if ($site==$ip){
-		$this->site_report .=  " ERROR - DNS failed ".$site;
+		$this->site_report .=  "<td>ERROR</td>";
 		return false;
 	} else {
-		$this->site_report .=  "<span class='black'>DNS ok - $site - ".$ip."</span>&nbsp;";
+		$this->site_report .=  "<td><span class='black'>".$ip."</span></td>";
 		return true;
 	}
+
     }
 
     function isSiteAvailable($url,$tag){
@@ -137,14 +151,13 @@ class Availability {
 	curl_close($cl);
 
 	if ($response && $responseInfo['http_code']=="200" ) {
-		$this->site_report .=  "<span class='black'>$tag seems up</span>";
+		$this->site_report .=  "<td><span class='black'>ok</span></td>";
 		return $response;
 	} elseif ($responseInfo['http_code']=="301" && strtolower($responseInfo['redirect_url'])!='http://www.'.strtolower($url).'/'){
-                $this->site_report .=  "<br />\n";
-              	$this->site_report .=  " Warning - website redirected to ".$responseInfo['redirect_url'];
+              	$this->site_report .=  "<td>Warning - website redirected to ".$responseInfo['redirect_url']."</td>";
 		return true;
 	} else {
-		$this->site_report .=  " ERROR - $tag is down";
+		$this->site_report .=  "<td>ERROR</td>";
 		return false;
 	}
 
@@ -153,10 +166,10 @@ class Availability {
      function findTheme($content){
 	$pattern='/wp-content\/themes/';
 	if (preg_match($pattern,$content)){
-		$this->site_report .=  "<span class='black'>website has wordpress installed</span>";
+		$this->site_report .=  "<td><span class='black'>ok</span></td>";
 		return true;
 	} else {
-		$this->site_report .=  " ERROR - no wordpress theme found";
+		$this->site_report .=  "<td>ERROR</td>";
 		return false;
 	}
      }
@@ -164,10 +177,10 @@ class Availability {
      function findLoginButton($content){
         $pattern='/forgetmenot/';
         if (preg_match($pattern,$content)){
-                $this->site_report .=  "<span class='black'>admin page found</span>";
+                $this->site_report .=  "<td><span class='black'>ok</span></td>";
                 return true;
         } else {
-                $this->site_report .=  " ERROR - admin page not found";
+                $this->site_report .=  "<td>ERROR</td>";
                 return false;
         } 
      }
