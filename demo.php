@@ -7,4 +7,6 @@ $live = new Availability;
 
 $live->parse($websites);
 
+echo $live->getOutput();
+
 ?>
