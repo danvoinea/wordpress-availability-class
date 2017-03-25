@@ -1,8 +1,7 @@
 <?php
 set_time_limit(0);
-// TODO: MAKE GRAPHICAL / PRETTIER
 // TODO: MAYBE ADD SCREENSHOTS http://www.phpgang.com/how-to-capture-website-screenshot-using-php-phantomjs_1117.html 
-
+// TODO http://stackoverflow.com/questions/7161113/how-do-i-export-html-table-data-as-csv-file
 class Availability {
 
     var $output = "";
