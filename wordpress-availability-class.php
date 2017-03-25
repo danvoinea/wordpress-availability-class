@@ -39,7 +39,7 @@ class Availability {
     <!-- styles -->
     <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap.min.css" rel="stylesheet">
     <style>
-	body {padding-top: 60px; }
+	body {padding-top: 30px; }
 	.website { color: red; }
 	.status6 { color: green; }
 	.black { color: black; }
@@ -64,13 +64,23 @@ class Availability {
   </head>
   <body>
 
-    <div class="container">';
+    <div class="container">
+<h2>Wordpress Availability Check - '.date("Y-m-d h:i:s").'</h2>
+';
 
 
 //start table
 $this->output.='<table class="sortable">
 <thead><tr>
-<th>Domain</th><th>Check time</th><th>DNS domain</th><th>DNS www.domain</th><th>Website up</th><th>Has wordpress</th><th>WP-Admin accessible</th><th>WP-admin display login</th><th>Status</th>
+<th>Domain</th>
+<th>DNS domain</th>
+<th>DNS www.domain</th>
+<th>Website up</th>
+<th>Has wordpress</th>
+<th>WP-Admin accessible</th>
+<th>WP-admin display login</th>
+<th>Check time</th>
+<th>Status</th>
 </tr></thead><tbody>';
 	foreach ($websiteList as $site){
 		$this->check(trim(strtolower($site)));
@@ -93,7 +103,7 @@ $this->output.='</tbody></table>';
 
 	$status=0;
 
-	$this->site_report = "<td class='alignLeft'><h4>".$site."</h4></td><td>".date("Y-m-d h:i:s")."</td>";
+	$this->site_report = "<td class='alignLeft'><h4>".$site."</h4></td>";
 
 	$status += $this->checkDNS($site);
 
@@ -112,14 +122,16 @@ $this->output.='</tbody></table>';
 			$status++;
 
 			$status += $this->findLoginButton($adminData);
-		}
+		}  else { $this->site_report .= '<td>ERROR</td>'; }
 
-	}
+	} else { $this->site_report .= '<td>ERROR</td>'; }
 
 
 	$this->output .= '<tr class="website status'.$status.'">';
 	$this->output .= $this->site_report;
-	$this->output .= '<td>'.$status.'</td></tr>';
+        $this->output .= "<td class='black'>".date("Y-m-d h:i:s")."</td>";
+	$this->output .= '<td>'.$status.'</td>';
+	$this->output .= '</tr>';
 
     }
 
