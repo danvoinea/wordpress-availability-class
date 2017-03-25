@@ -1,7 +1,7 @@
 <?php
 require_once('wordpress-availability-class.php');
 
-$websites=file("../domains");
+$websites=file("domains");
 
 $live = new Availability;
 
