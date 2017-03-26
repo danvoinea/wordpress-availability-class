@@ -2,17 +2,23 @@
 set_time_limit(0);
 // TODO: MAYBE ADD SCREENSHOTS http://www.phpgang.com/how-to-capture-website-screenshot-using-php-phantomjs_1117.html 
 // TODO http://stackoverflow.com/questions/7161113/how-do-i-export-html-table-data-as-csv-file
+// TODO: fix display bug when DNS is dead
+
 class Availability {
 
     var $output = "";
     var $site_report ='';
+    var $screenshot = true;
 
-
-    public function getOutput() { 
+    function getOutput() { 
         return $this->output;
     }
 
-
+   function takeScreenshot($url){
+	if ($this->screenshot == true){
+		shell_exec("rm 'images/$url.png'; rm 'images/$url-thumbnail.png'; phantomjs screenshot.js $url && convert 'images/$url.png' -filter Lanczos -thumbnail 150x100 'images/$url-thumbnail.png'");
+	}
+   }
 
 /*
     public function setOutput($output) { 
@@ -52,6 +58,8 @@ class Availability {
 
 	table td,table th { padding:1px 10px; text-align:center;}
 	table td.alignLeft { text-align:left; }
+
+
     </style>
     <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-responsive.min.css" rel="stylesheet">
 
@@ -59,7 +67,18 @@ class Availability {
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.2/underscore-min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.2.1/bootstrap.min.js"></script>
-    <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
+    <script src="//www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
+   
+ <link rel="stylesheet" type="text/css" href="css/imgzoom.css" />
+ <script type="text/javascript" src="scripts/jquery.imgzoom.pack.js"></script>
+
+<script type="text/javascript">
+  $(document).ready(function () {
+    $("img.thumbnail").imgZoom({fastSwitch:true, duration:0,wrap: \'<div class="imgzoom-wrap"><div class="imgzoom-container" /></div>\'});
+  });
+</script>
+
+
   </head>
   <body>
 
@@ -80,7 +99,7 @@ $this->output.='<table class="sortable">
 <th>WP-admin display login</th>
 <th>Check time</th>
 <th>Status</th>
-</tr></thead><tbody>';
+<th>Screenshot</th></tr></thead><tbody>';
 	foreach ($websiteList as $site){
 		$this->check(trim(strtolower($site)));
 	}
@@ -130,7 +149,10 @@ $this->output.='</tbody></table>';
 	$this->output .= $this->site_report;
         $this->output .= "<td class='black'>".date("Y-m-d h:i:s")."</td>";
 	$this->output .= '<td>'.$status.'</td>';
+	$this->output .= '<td><a href="images/'.$site.'.png"><img class="thumbnail" src="images/'.$site.'-thumbnail.png" alt="$site" /></a></td>';
 	$this->output .= '</tr>';
+
+	$this->takeScreenshot($site);
 
     }
 
